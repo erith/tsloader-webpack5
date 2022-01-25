@@ -3,8 +3,6 @@ const a = 30;
 const b = a + 40;
 console.log('test' + b);
 
-function App() {
+function App() {}
 
-}
-
-export { App }
+export { App };

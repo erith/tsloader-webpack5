@@ -10,5 +10,8 @@
     "lib": [
       "esnext", "dom", "DOM.Iterable"
     ],
+    "include": [
+      "src"
+    ]
   }
 }
