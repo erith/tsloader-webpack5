@@ -1,8 +1,237 @@
 <html>
   <head>
     <title>test</title>
-    <body>
-      fdsfdsddddddddddddddddddd111dd
+    <script type="text/javascript">
+      /*
+      const debounce = (callback, delay) => {
+        let timerId = null;
+        return (event) => {
+          if (timerId) clearTimeout(timerId);
+          timerId = setTimeout(callback, delay, event);
+        };
+      };
+      */
+
+      /*
+      const debounce = (callback, delay) => {
+        let timerId = null;
+
+        return (event) => {
+          if (timerId) clearTimeout(timerId);
+          timerId = setTimeout(callback, delay, event);
+        };
+      };
+      */
+      const debounce = (func, wait, leading = false) => {
+        let inDebounce;
+        return function () {
+          const context = this;
+          const args = arguments;
+
+          // inDebounce 값이 변하기 전에 미리 저장하기 위해 사용
+          let callNow = leading && !inDebounce;
+
+          // leading이 아닌 경우에만 wait 이후 func가 실행되도록 함
+          const later = () => {
+            inDebounce = null;
+            if (!leading) func.apply(context, args);
+          };
+
+          // setTimeout이 실행된 Timeout의 ID를 반환하고, clearTimeout()으로 이를 해제할 수 있음을 이용
+          clearTimeout(inDebounce);
+          inDebounce = setTimeout(later, wait);
+
+          // 만약 leading=true이고 inDebounce가 없으면 func를 실행
+          if (callNow) func.apply(context, args);
+        };
+      };
+
+      const throttle = (callback, delay) => {
+        let timerId = null;
+        return (event) => {
+          if (timerId) return;
+          timerId = setTimeout(
+            () => {
+              callback(event);
+              timerId = null;
+            },
+            delay,
+            event,
+          );
+        };
+      };
+
+      function throttle2(callback, limit = 10) {
+        let waiting = false;
+        return function () {
+          console.log('test');
+          if (!waiting) {
+            callback.apply(this, arguments);
+            waiting = true;
+            setTimeout(() => {
+              waiting = false;
+            }, limit);
+          }
+        };
+      }
+
+      let isClicked = false;
+      let start = { x: 0, y: 0 };
+      let end = { x: 0, y: 0 };
+      const onmousedown = (ev) => {
+        isClicked = true;
+
+        start = { x: ev.offsetX, y: ev.offsetY };
+        end = { x: ev.offsetX, y: ev.offsetY };
+        setCapture(ev);
+      };
+
+      const onmousemove = (ev) => {
+        if (isClicked) {
+          end.x += ev.movementX;
+          end.y += ev.movementY;
+
+          //console.log(ev, { x: ev.movementX, y: ev.movementY });
+        }
+      };
+
+      const onmouseup = (ev) => {
+        isClicked = false;
+        //console.log(JSON.stringify(end));
+        releaseCapture(ev);
+      };
+
+      function lockChangeAlert() {
+        if (
+          document.pointerLockElement === canvas ||
+          document.mozPointerLockElement === canvas
+        ) {
+          console.log('The pointer lock status is now locked');
+          // Do something useful in response
+        } else {
+          console.log('The pointer lock status is now unlocked');
+          // Do something useful in response
+        }
+      }
+
+      const setCapture = (e) => {
+        const canvas = document.getElementById('canvas');
+        //canvas.setPointerCapture();
+        /*
+        canvas.requestPointerLock =
+          canvas.requestPointerLock || canvas.mozRequestPointerLock;
+          */
+        //canvas.requestPointerLock();
+      };
+
+      const releaseCapture = (e) => {
+        const canvas = document.getElementById('canvas');
+        //canvas.releasePointerCapture(e.pointerId);
+        /*
+        document.exitPointerLock =
+          document.exitPointerLock || document.mozExitPointerLock;
+        document.exitPointerLock();
+        */
+      };
+
+      let throttleTimerId = null;
+      const pointermove = (ev) => {
+        if (throttleTimerId) return;
+        throttleTimerId = setTimeout(
+          () => {
+            console.log('>>>>11' + JSON.stringify(ev));
+            throttleTimerId = null;
+          },
+          1000 / 30,
+          ev,
+        );
+
+        /*
+        const func = throttle(() => {
+          console.log('>>>>11' + JSON.stringify(ev));
+        }, 500);
+
+        console.log('>>>>11' + JSON.stringify(ev));
+        */
+        //func();
+        //
+      };
+
+      function throttled(delay, fn) {
+        let lastCall = 0;
+        return function wrapper(...args) {
+          const now = new Date().getTime();
+          if (now - lastCall < delay) {
+            return;
+          }
+          lastCall = now;
+          return fn(...args);
+        };
+      }
+
+      const pointermove2 = throttle2(() => {
+        throttled(1000, () => {
+          console.log('>>>>11' + JSON.stringify(ev));
+        });
+        //func();
+      }, 500);
+
+      const init = () => {
+        const canvas = document.getElementById('canvas');
+        canvas.addEventListener('pointerdown', function (e) {
+          const that = e.currentTarget;
+          that.addEventListener('pointermove', canvas, { passive: true });
+          that.setPointerCapture(e.pointerId);
+        });
+
+        canvas.addEventListener('pointerup', function (e) {
+          const that = e.currentTarget;
+          that.addEventListener('pointermove', null);
+          that.releasePointerCapture(e.pointerId);
+        });
+      };
+    </script>
+    <body onload="init();">
+      <canvas
+        id="canvas"
+        style="width: 500px; height: 500px; border: 1px solid rgb(194, 0, 0)"
+      ></canvas>
+
+      <p>total counts: <span id="count">0</span></p>
+      <button id="button">TEST</button>
+      <script type="text/javascript">
+        const canvas = document.getElementById('canvas');
+
+        canvas.addEventListener('mousemove', onmousemove, false);
+        canvas.addEventListener('mouseup', onmouseup);
+        canvas.addEventListener('mousedown', onmousedown, false);
+        canvas.addEventListener('pointermove', pointermove);
+        if ('onpointerlockchange' in document) {
+          document.addEventListener(
+            'pointerlockchange',
+            lockChangeAlert,
+            false,
+          );
+        } else if ('onmozpointerlockchange' in document) {
+          document.addEventListener(
+            'mozpointerlockchange',
+            lockChangeAlert,
+            false,
+          );
+        }
+
+        let count = 0;
+        let button = document.getElementById('button');
+        let counter = document.getElementById('count');
+        counter.innerText = count;
+
+        function handleClick() {
+          count += 1;
+          counter.innerText = count;
+        }
+
+        button.addEventListener('click', debounce(handleClick, 500, true));
+      </script>
     </body>
   </head>
 </html>
